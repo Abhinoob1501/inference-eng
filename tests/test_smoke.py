@@ -53,8 +53,8 @@ def test_invalid_sampling_params_raise():
 def test_batch_generation():
     engine = InferenceEngine(EngineConfig(model_name = "sshleifer/tiny-gpt2", device="cpu"))
 
-    outputs = engine.generate.batch(
-        ["Hi", "Hello there"],
+    outputs = engine.generate_batch(
+        ["Hi", "Hello there"], 
         SamplingParams(max_new_tokens=4, do_sample=False)
     )
 
