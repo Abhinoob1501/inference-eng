@@ -55,7 +55,7 @@ def test_batch_generation():
 
     outputs = engine.generate_batch(
         ["Hi", "Hello there"], 
-        SamplingParams(max_new_tokens=4, do_sample=False)
+        SamplingParams(max_new_tokens=4, do_sample=False, top_k = 0)
     )
 
     assert len(outputs) == 2

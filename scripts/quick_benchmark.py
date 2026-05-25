@@ -15,7 +15,7 @@ def main() -> None:
         "What is token sampling?",
     ]
 
-    params = SamplingParams(max_new_tokens=32, do_sample=False)
+    params = SamplingParams(max_new_tokens=32, do_sample=False,top_k=0)
     latencies = []
 
     for prompt in prompts:
