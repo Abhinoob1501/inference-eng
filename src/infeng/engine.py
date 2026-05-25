@@ -14,6 +14,10 @@ class InferenceEngine:
         self.config = config or EngineConfig()
         self.device = self._resolve_device(self.config.device)
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.model_name)
+        '''When it uses padding = True During engine_batch 
+        The GPT-2 based architechture doesn't have a padding as it was trained without one'''
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(self.config.model_name)
         self.model.to(self.device)
         self.model.eval()
