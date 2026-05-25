@@ -36,13 +36,13 @@ def main() -> None:
     print("\n --- Throughoutput Comparison ---")
     
     start = time.perf_counter()
-    for prompts in prompts:
-        engine.generate(prompts,params)
+    for prompt in prompts:
+        engine.generate(prompt,params)
     
-    single_time = time.perf_counter()
+    single_time = (time.perf_counter() - start) * 1000
     engine.generate_batch(prompts,params)
-    batch_time = time.perf_counter() - start * 1000
-    
+    batch_time = (time.perf_counter() - start) * 1000
+
     print(f"Single generation total time: {single_time:.2f} ms")
     print(f"Batch generation total time: {batch_time:.2f} ms")
     print(f"Batch speedup: {single_time / batch_time:.2f}x")

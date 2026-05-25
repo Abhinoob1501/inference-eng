@@ -116,7 +116,7 @@ class InferenceEngine:
                 temperature=params.temperature,
                 top_k=params.top_k,
                 top_p=params.top_p,
-                pad_tokens=self.tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.eos_token_id,
             )
         latency_ms = (time.perf_counter() - start) * 1000
 
@@ -142,4 +142,4 @@ class InferenceEngine:
                 }
             )
 
-            return results
+        return results
