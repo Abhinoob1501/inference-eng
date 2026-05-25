@@ -49,3 +49,11 @@ def test_invalid_sampling_params_raise():
     engine = InferenceEngine(EngineConfig(model_name="sshleifer/tiny-gpt2", device="cpu"))
     with pytest.raises(ValueError):
         engine.generate("Hello", SamplingParams(max_new_tokens=0))
+
+def test_batch_generation():
+    engine = InferenceEngine(EngineConfig(model_name = "sshleifer/tiny-gpt2", device="cpu"))
+
+    outputs = engine.generate.batch(
+        ["Hi", "Hello there"],
+        SamplingParams(max_new_tokens=4, do_sample=False)
+    )

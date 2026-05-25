@@ -105,6 +105,8 @@ class InferenceEngine:
             return_tensors='pt',
             padding=True
         ).to(self.device)
+        start = time.perf_counter()
+
 
         with torch.inference_mode():
             output_ids = self.model.generate(
@@ -114,5 +116,30 @@ class InferenceEngine:
                 temperature=params.temperature,
                 top_k=params.top_k,
                 top_p=params.top_p,
-                pad_tokens=self.tokenizer.eos_tokens_id,
+                pad_tokens=self.tokenizer.eos_token_id,
             )
+        latency_ms = (time.perf_counter() - start) * 1000
+
+        results = []
+
+        for i, output in enumerate(output_ids):
+            prompt_tokens = int(inputs["attention_mask"][i].sum())
+            generated_tokens = int(output.shape[0] - prompt_tokens)
+
+            decoded = self.tokenizer.decode(
+                output,
+                skip_special_tokens = True
+            )
+
+            results.append(
+                {
+                    "text" : decoded,
+                    "prompt_tokens" : prompt_tokens,
+                    "generated_tokens" : generated_tokens,
+                    "total_tokens" : int(output.shape[0]),
+                    "model" : self.config.model_name,
+                    "latency_ms" : round(latency_ms, 2),
+                }
+            )
+
+            return results
