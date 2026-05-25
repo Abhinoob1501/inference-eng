@@ -57,3 +57,7 @@ def test_batch_generation():
         ["Hi", "Hello there"],
         SamplingParams(max_new_tokens=4, do_sample=False)
     )
+
+    assert len(outputs) == 2
+    assert all("text" in o for o in outputs)
+    assert all(o["prompt_tokens"] > 0 for o in outputs)
