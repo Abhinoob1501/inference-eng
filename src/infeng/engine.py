@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import time
+import threading
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
 from .config import EngineConfig
 from .sampler import SamplingParams
@@ -148,3 +149,37 @@ class InferenceEngine:
             )
 
         return results
+    
+    def stream_generate(self, prompt: str, params: SamplingParams):
+        self.validate_sampling_params(params)
+
+        inputs = self.tokenizer(
+            prompt,
+            return_tensors = "pt"
+        ).to(self.device)
+
+        streamer = TextIteratorStreamer(
+            self.tokenizer,
+            skip_special_tokens = True
+        )
+
+        generation_kwargs = dict(
+            **inputs,
+            max_new_tokens = params.max_new_tokens,
+            do_sample = params.do_sample,
+            temperature = params.temperature,
+            top_k = params.top_k,
+            top_p = params.top_p,
+            pad_token_id = self.tokenizer.eos_token_id,
+            streamer = streamer,
+        )
+
+        thread = threading.Thread(
+            target = self.model.generate,
+            kwargs = generation_kwargs
+        )
+
+        thread.start()
+
+        for text in streamer:
+            yield text
