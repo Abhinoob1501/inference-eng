@@ -1,5 +1,10 @@
 # 2-Week Implementation Plan (Daily)
 
+> Status update: the correctness/core milestone now includes typed results, static
+> batch generation, SSE streaming, limits, API lifecycle handling, structured
+> errors, tests, and a reproducible benchmark harness. Continuous batching and the
+> performance experiments below remain future work.
+
 ## Week 1 — Correctness + Core Engine
 
 ### Day 1: Setup and Baseline
@@ -52,6 +57,7 @@
 ### Day 10: Continuous Batching (Basic)
 - Implement queue-based scheduler window (e.g., 10–30ms).
 - Merge nearby requests into one batch.
+- Add bounded queue capacity, cancellation, fairness, and overload tests.
 - Measure throughput improvements under concurrent load.
 
 ### Day 11: Prefix Caching
