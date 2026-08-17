@@ -1,4 +1,8 @@
-"""Domain errors exposed by the inference engine."""
+"""Transport-neutral failures raised below the HTTP layer.
+
+FastAPI maps these classes to status codes in one place. Keeping that mapping out of
+the engine lets Python callers handle the same failures without importing FastAPI.
+"""
 
 
 class InferenceEngineError(Exception):

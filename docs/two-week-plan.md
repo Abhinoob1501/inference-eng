@@ -2,8 +2,12 @@
 
 > Status update: the correctness/core milestone now includes typed results, static
 > batch generation, SSE streaming, limits, API lifecycle handling, structured
-> errors, tests, and a reproducible benchmark harness. Continuous batching and the
-> performance experiments below remain future work.
+> errors, tests, and a reproducible benchmark harness. True mid-decode continuous
+> batching and the performance experiments below remain future work.
+
+> The Day 10 admission-window scheduler is now implemented with a bounded queue,
+> cancellation, compatibility grouping, fairness, and metrics. True mid-decode
+> insertion remains a later custom decode-loop milestone.
 
 ## Week 1 — Correctness + Core Engine
 

@@ -8,6 +8,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      # A clean hosted environment verifies that pyproject.toml declares everything
+      # needed to install the package and execute both unit and integration tests.
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

@@ -1,15 +1,20 @@
+# Python bytecode and native extension build products.
 __pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 *.so
+# Local virtual environments and secrets must never enter source control.
 .venv/
 venv/
 .env
+# Tool caches, coverage output, and runtime logs are reproducible artifacts.
 .pytest_cache/
 .mypy_cache/
 coverage/
 htmlcov/
 *.log
+# Editable installs generate package metadata inside src/.
 *.egg-info/
+# Benchmark reports contain machine-specific measurements; the script recreates them.
 benchmarks/*.json

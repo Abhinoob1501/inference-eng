@@ -1,1 +1,2 @@
+# Install this repository in editable mode together with contributor/test tools.
 -e .[dev]

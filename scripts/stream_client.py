@@ -8,6 +8,8 @@ import httpx
 
 
 def main() -> None:
+    """Consume the project's small named-event SSE protocol with plain httpx."""
+
     event_name = "message"
     with httpx.stream(
         "POST",
@@ -21,6 +23,9 @@ def main() -> None:
     ) as response:
         response.raise_for_status()
         for line in response.iter_lines():
+            # One SSE event arrives as an ``event:`` line followed by a JSON
+            # ``data:`` line and a blank separator. httpx exposes those lines as the
+            # server flushes them, so partial text can be printed immediately.
             if line.startswith("event:"):
                 event_name = line.removeprefix("event:").strip()
             elif line.startswith("data:"):
@@ -28,6 +33,8 @@ def main() -> None:
                 if event_name == "chunk":
                     print(payload["text"], end="", flush=True)
                 elif event_name == "done":
+                    # The final event repeats the canonical non-streaming metadata,
+                    # making token counts and finish reason available to clients.
                     metadata = payload["response"]
                     print(
                         f"\n[{metadata['finish_reason']}; "

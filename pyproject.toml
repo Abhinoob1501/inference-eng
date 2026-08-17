@@ -1,4 +1,5 @@
 [build-system]
+# Setuptools builds both normal and editable installs from the src/ layout.
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -17,15 +18,19 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# API consumers do not need test tooling; contributors install the dev extra.
 dev = [
     "pytest>=8.2,<9",
     "httpx>=0.27,<1",
 ]
 
 [tool.setuptools.packages.find]
+# Keeping importable code under src/ prevents tests from accidentally importing the
+# repository directory instead of the installed package.
 where = ["src"]
 
 [tool.pytest.ini_options]
+# Tests still work before an editable install because src is added to sys.path.
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = "-ra"

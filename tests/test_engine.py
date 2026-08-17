@@ -1,3 +1,5 @@
+"""Core-engine integration tests using the real TinyGPT2 model."""
+
 from __future__ import annotations
 
 from dataclasses import replace
@@ -75,6 +77,8 @@ def test_variable_length_batch_has_logical_token_counts(
         SamplingParams(max_new_tokens=4, do_sample=False),
     )
 
+    # The shorter row is left-padded to width two internally, but that artificial
+    # token must not appear in generated or total usage.
     assert [output.prompt_tokens for output in outputs] == [1, 2]
     assert [output.generated_tokens for output in outputs] == [4, 4]
     assert [output.total_tokens for output in outputs] == [5, 6]
@@ -91,6 +95,8 @@ def test_stream_matches_non_streaming_contract(engine: InferenceEngine) -> None:
 
     assert done.event == "done"
     assert done.result is not None
+    # Incremental fragments must concatenate to the same canonical completion that
+    # clients receive in the final metadata event.
     assert chunks == done.result.text
     assert not chunks.startswith("Hello")
     assert done.result.generated_tokens == 4
@@ -125,6 +131,8 @@ def test_queue_timeout_rejects_overload(
         "config",
         replace(engine.config, queue_timeout_seconds=0.01),
     )
+    # Occupying the only physical model slot simulates another in-flight request
+    # without adding a slow real generation call to the test.
     engine._slots.acquire()
     try:
         with pytest.raises(EngineBusyError, match="busy"):
@@ -144,9 +152,46 @@ def test_generation_deadline_returns_timeout_reason(
         replace(engine.config, generation_timeout_seconds=0.000001),
     )
 
+    # A near-zero cooperative deadline should stop after the first decode step and
+    # surface a typed finish reason rather than raising or hanging.
     output = engine.generate(
         "Hello", SamplingParams(max_new_tokens=8, do_sample=False)
     )
 
     assert output.finish_reason == "timeout"
     assert output.generated_tokens < 8
+
+
+def test_kv_cache_can_be_disabled_without_changing_greedy_output(
+    engine: InferenceEngine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    params = SamplingParams(max_new_tokens=4, do_sample=False)
+    cached = engine.generate("Hello", params)
+    monkeypatch.setattr(
+        engine,
+        "config",
+        replace(engine.config, use_kv_cache=False),
+    )
+
+    uncached = engine.generate("Hello", params)
+
+    assert cached.text == uncached.text
+    assert engine.metrics_snapshot()["kv_cache_enabled"] is False
+
+
+def test_engine_metrics_include_tokens(engine: InferenceEngine) -> None:
+    metrics = engine.metrics_snapshot()
+    assert metrics["requests_completed"] >= 1
+    assert metrics["prompt_tokens"] >= 1
+    assert metrics["generated_tokens"] >= 1
+
+
+def test_repeated_prompt_uses_tokenization_cache(engine: InferenceEngine) -> None:
+    before = engine.tokenization_cache.snapshot()["hits"]
+    params = SamplingParams(max_new_tokens=1, do_sample=False)
+    engine.generate("cache this exact prompt", params)
+    engine.generate("cache this exact prompt", params)
+
+    after = engine.tokenization_cache.snapshot()
+    assert after["hits"] >= before + 1
+    assert after["size"] >= 1
